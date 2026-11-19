@@ -43,3 +43,4 @@ def test_transcription_result():
     data = result.model_dump()
     assert data["language"] == "en"
     assert "created_at" in data
+

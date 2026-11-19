@@ -43,3 +43,4 @@ if __name__ == "__main__":
     out = Path(__file__).parent / "test_audio.wav"
     generate_sine_wave(out, duration_seconds=3.0)
     print(f"Generated sample audio file at: {out.resolve()}")
+

@@ -99,3 +99,4 @@ class HealthResponse(BaseModel):
     device: str
     supported_formats: List[str]
     timestamp: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+

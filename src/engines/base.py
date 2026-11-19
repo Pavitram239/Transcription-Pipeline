@@ -42,3 +42,4 @@ class BaseTranscriptionEngine(ABC):
             TranscriptionResult containing full text and timestamped segments.
         """
         pass
+

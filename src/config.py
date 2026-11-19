@@ -45,3 +45,4 @@ class PipelineConfig(BaseModel):
 
 
 DEFAULT_CONFIG = PipelineConfig()
+

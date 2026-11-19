@@ -70,3 +70,4 @@ def test_format_transcription_dispatcher():
     assert format_transcription(res, "txt") == res.text
     assert "WEBVTT" in format_transcription(res, "vtt")
     assert "-->" in format_transcription(res, "srt")
+

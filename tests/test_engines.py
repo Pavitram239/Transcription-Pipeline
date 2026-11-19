@@ -38,3 +38,4 @@ def test_whisper_engine_with_sample():
     assert seg.end > seg.start
     assert "pipeline" in result.text.lower() or "speech" in result.text.lower()
     assert seg.words is not None and len(seg.words) > 0
+

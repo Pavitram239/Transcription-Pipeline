@@ -71,3 +71,4 @@ def format_transcription(result: TranscriptionResult, fmt: ExportFormat) -> str:
             return export_as_txt(result)
         case _:
             raise ValueError(f"Unsupported format '{fmt}'. Choose from 'json', 'srt', 'vtt', 'txt'.")
+

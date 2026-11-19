@@ -108,3 +108,4 @@ class MockTranscriptionEngine(BaseTranscriptionEngine):
             processing_time_seconds=round(elapsed, 4),
             model_name="mock-engine",
         )
+

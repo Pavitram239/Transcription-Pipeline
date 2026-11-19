@@ -71,3 +71,4 @@ def test_pipeline_process_and_save(mock_pipeline, dummy_wav, tmp_path: Path):
     result = mock_pipeline.process_and_save(dummy_wav, out_file, fmt="json")
     assert out_file.exists()
     assert out_file.stat().st_size > 0
+

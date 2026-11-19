@@ -114,3 +114,4 @@ class TranscriptionPipeline:
         out.write_text(formatted_content, encoding="utf-8")
         logger.info(f"Saved transcription ({fmt}) to {out.resolve()}")
         return result
+
