@@ -1,10 +1,29 @@
+# Python & Backend
+backend/.venv/
 .venv/
+*/.venv/
 __pycache__/
+**/__pycache__/
 *.py[cod]
 .pytest_cache/
-.idea/
-samples/*.json
-samples/*.srt
-samples/*.vtt
-samples/*.txt
+**/.pytest_cache/
+backend/samples/*.json
+backend/samples/*.srt
+backend/samples/*.vtt
+backend/samples/*.txt
 
+# Frontend
+frontend/node_modules/
+node_modules/
+frontend/dist/
+dist/
+.eslintcache
+
+# IDE & OS
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+
+
+/docs

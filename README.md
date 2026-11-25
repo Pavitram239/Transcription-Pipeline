@@ -43,32 +43,32 @@ The primary objective was to build a clean, resilient, and extensible pipeline r
 
 ```
 Transcription Pipeline/
-├── src/
-│   ├── models/
-│   │   ├── __init__.py
-│   │   └── schemas.py          # Pydantic data models (Segment, Word, TranscriptionResult)
-│   ├── engines/
-│   │   ├── __init__.py
-│   │   ├── base.py             # BaseTranscriptionEngine abstract base class
-│   │   ├── whisper_engine.py   # faster-whisper CTranslate2 implementation
-│   │   └── mock_engine.py      # Deterministic mock engine for tests and dry-runs
-│   ├── config.py               # Centralized configuration and environment overrides
-│   ├── pipeline.py             # Audio validation, pipeline orchestration, and hook manager
-│   ├── exporters.py            # Formatters for JSON, SubRip (.srt), WebVTT (.vtt), and .txt
-│   ├── cli.py                  # CLI entry point with flags for model, format, and outputs
-│   └── api/
-│       ├── __init__.py
-│       └── app.py              # FastAPI microservice with /v1/transcribe and /v1/health
-├── tests/
-│   ├── test_schemas.py         # Schema serialization and validation tests
-│   ├── test_exporters.py       # Timestamp math and subtitle formatting tests
-│   ├── test_pipeline.py        # Audio validation and hook execution tests
-│   ├── test_api.py             # FastAPI TestClient endpoint tests
-│   └── test_engines.py         # Unit and integration tests for engines
-├── samples/
-│   ├── generate_samples.py     # Script to generate synthetic test tones
-│   └── spoken_sample.wav       # Real spoken audio sample for end-to-end verification
-├── requirements.txt            # Production dependencies
+├── backend/                    # Python Backend (all python code & virtualenv)
+│   ├── .venv/                  # Python virtual environment
+│   ├── src/                    # Core source code
+│   │   ├── models/             # Pydantic schemas (Segment, Word, TranscriptionResult)
+│   │   ├── engines/            # BaseTranscriptionEngine, faster-whisper, mock engine
+│   │   ├── config.py           # Centralized configuration & environment overrides
+│   │   ├── pipeline.py         # Audio validation, decoding & hook manager
+│   │   ├── exporters.py        # Subtitle and text formatters (JSON, SRT, VTT, TXT)
+│   │   ├── cli.py              # CLI entry point
+│   │   └── api/                # FastAPI service (/v1/transcribe, /v1/health)
+│   ├── tests/                  # Unit and integration tests
+│   ├── samples/                # Real and synthetic audio samples
+│   ├── scripts/                # Helper Python scripts
+│   ├── requirements.txt        # Production dependencies
+│   └── README.md               # Backend documentation
+├── frontend/                   # React + Vite Web Studio (Figma implementation)
+│   ├── src/
+│   │   ├── components/         # Navbar, Sidebar, TranscriptCard
+│   │   ├── utils/              # Export formatters & timestamp math
+│   │   ├── types.ts            # TypeScript definitions matching Pydantic models
+│   │   ├── api.ts              # Fetch client & Figma mock data
+│   │   └── App.tsx             # Interactive application state
+│   ├── public/                 # Static assets & sample audio
+│   ├── package.json            # Node dependencies
+│   ├── vite.config.ts          # Vite build & proxy config
+│   └── README.md               # Frontend documentation
 ├── .gitignore
 └── README.md                   # System documentation
 ```
@@ -127,8 +127,15 @@ python -m src.cli samples/spoken_sample.wav --model tiny --format json -o output
 Hello, this is a test of the speech transcription pipeline.
 ```
 
+### A. Run CLI from backend
+```bash
+cd backend
+python src/cli.py --input samples/spoken_sample.wav --format srt --output transcript.srt
+```
+
 ### B. Run the REST API Service
 ```bash
+cd backend
 uvicorn src.api.app:app --host 127.0.0.1 --port 8000 --reload
 ```
 * **Interactive Docs:** Visit `http://127.0.0.1:8000/docs`
@@ -137,11 +144,30 @@ uvicorn src.api.app:app --host 127.0.0.1 --port 8000 --reload
 
 ### C. Run the Test Suite
 ```bash
+cd backend
 pytest -v tests/
 ```
 ```
 ============================= 24 passed in 2.62s ==============================
 ```
+
+### Running the Web Studio Frontend (React + Vite)
+
+The project includes an interactive web interface built with React, Vite, TypeScript, and Tailwind CSS.
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+Open `http://localhost:5173` to access:
+* Drag-and-drop audio file upload and microphone recording
+* Audio player synchronized with segment & word timestamps
+* Real-time search and confidence score heatmaps
+* Live subtitle player preview (SRT/VTT)
+* One-click download/export to SRT, WebVTT, TXT, and JSON
+* Local session history of transcriptions
 
 ---
 
