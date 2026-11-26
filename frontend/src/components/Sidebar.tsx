@@ -19,13 +19,14 @@ interface SidebarProps {
 
 const LANGUAGES = [
   { code: 'auto', label: 'Auto-detect' },
+  { code: 'gu', label: 'Gujarati (ગુજરાતી)' },
+  { code: 'hi', label: 'Hindi (हिन्दी)' },
   { code: 'en', label: 'English' },
   { code: 'es', label: 'Spanish' },
   { code: 'fr', label: 'French' },
   { code: 'de', label: 'German' },
   { code: 'zh', label: 'Chinese' },
   { code: 'ja', label: 'Japanese' },
-  { code: 'hi', label: 'Hindi' },
   { code: 'it', label: 'Italian' },
   { code: 'pt', label: 'Portuguese' },
 ];
@@ -105,7 +106,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             <input
               ref={fileInputRef}
               type="file"
-              accept=".wav,.mp3,.m4a,.flac,.ogg,.wma,.aac"
+              accept=".wav,.mp3,.m4a,.flac,.ogg,.oga,.opus,.webm,.wma,.aac,.mp4"
               onChange={handleFileInput}
               className="hidden"
             />
@@ -167,7 +168,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         {/* Upload Limits Note (visible when empty) */}
         {!selectedFile && (
           <div className="mt-4 text-[11px] text-slate-400 space-y-1">
-            <p>WAV, MP3, M4A, FLAC, OGG, WMA, AAC</p>
+            <p>WAV, MP3, M4A, FLAC, OGG, OGA, WEBM, AAC</p>
             <p>Maximum recording size: 100 MB</p>
           </div>
         )}

@@ -92,12 +92,14 @@ class FasterWhisperEngine(BaseTranscriptionEngine):
         start_time = time.perf_counter()
 
         # Run transcription with generator of segments
+        # condition_on_previous_text=False prevents hallucination cascading in low-resource/rhyming audio
         segments_generator, info = model.transcribe(
             str(audio_path),
             language=options.language,
             vad_filter=options.vad_filter,
             word_timestamps=options.word_timestamps,
             initial_prompt=options.initial_prompt,
+            condition_on_previous_text=False,
         )
 
         segments_list: list[Segment] = []

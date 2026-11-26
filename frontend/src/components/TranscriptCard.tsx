@@ -26,6 +26,7 @@ interface TranscriptCardProps {
   status: ViewStatus;
   result: TranscriptionResult | null;
   elapsedSeconds: number;
+  errorMessage?: string | null;
   audioUrl: string | null;
   currentTime: number;
   duration: number;
@@ -44,6 +45,7 @@ export const TranscriptCard: React.FC<TranscriptCardProps> = ({
   status,
   result,
   elapsedSeconds,
+  errorMessage,
   audioUrl,
   currentTime,
   duration,
@@ -305,6 +307,34 @@ export const TranscriptCard: React.FC<TranscriptCardProps> = ({
             </h3>
             <p className="text-xs sm:text-sm text-slate-500 max-w-sm mb-6 leading-relaxed">
               Choose a recording under 100 MB, or compress your audio and try again.
+            </p>
+
+            <button
+              type="button"
+              onClick={onChooseAnotherFile}
+              className="px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold rounded-xl shadow-xs transition mb-4"
+            >
+              Choose another recording
+            </button>
+
+            <p className="text-xs text-slate-400">
+              No transcript was generated.
+            </p>
+          </div>
+        )}
+
+        {/* ----------------- STATE C2: ERROR GENERAL ----------------- */}
+        {status === 'error_general' && (
+          <div className="flex flex-col items-center justify-center text-center py-14 px-4">
+            <div className="w-14 h-14 rounded-2xl bg-rose-50 border border-rose-100 flex items-center justify-center mb-6 text-rose-600">
+              <AlertTriangle className="w-7 h-7 stroke-[1.75]" />
+            </div>
+
+            <h3 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight mb-2">
+              Transcription Failed
+            </h3>
+            <p className="text-xs sm:text-sm text-rose-600 max-w-md mb-6 leading-relaxed bg-rose-50 border border-rose-100 rounded-xl p-3">
+              {errorMessage || 'An error occurred during transcription.'}
             </p>
 
             <button

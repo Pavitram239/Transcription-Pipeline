@@ -9,7 +9,7 @@ class PipelineConfig(BaseModel):
     """Runtime configuration for transcription engines and pipeline."""
 
     model_size: str = Field(
-        default=os.getenv("TRANSCRIPTION_MODEL_SIZE", "base"),
+        default=os.getenv("TRANSCRIPTION_MODEL_SIZE", "small"),
         description="Whisper model size: tiny, base, small, medium, large-v3",
     )
     device: str = Field(
@@ -38,8 +38,12 @@ class PipelineConfig(BaseModel):
         ".m4a",
         ".flac",
         ".ogg",
+        ".oga",
+        ".opus",
+        ".webm",
         ".wma",
         ".aac",
+        ".mp4",
     }
     max_file_size_mb: int = 100
 

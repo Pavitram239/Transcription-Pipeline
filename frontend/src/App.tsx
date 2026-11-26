@@ -1,18 +1,14 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useRef } from 'react';
 import { Navbar } from './components/Navbar';
 import { Sidebar } from './components/Sidebar';
 import { TranscriptCard } from './components/TranscriptCard';
 import {
-  HealthResponse,
   TranscriptionOptions,
   TranscriptionResult,
   ViewStatus,
 } from './types';
 import {
-  checkHealth,
   transcribeAudio,
-  getFigmaSampleResult,
-  createSyntheticDemoWav,
   DEFAULT_API_URL,
 } from './api';
 
@@ -21,15 +17,14 @@ export const App: React.FC = () => {
   const [apiUrl, setApiUrl] = useState<string>(() => {
     return localStorage.getItem('transcription_api_url') || DEFAULT_API_URL;
   });
-  const [health, setHealth] = useState<HealthResponse | null>(null);
-  const [healthError, setHealthError] = useState(false);
 
-  // View & UI state - defaults to completed view matching Figma Page 1
-  const [status, setStatus] = useState<ViewStatus>('completed');
-  const [fileName, setFileName] = useState('Product discovery.wav');
-  const [fileSize, setFileSize] = useState<number | undefined>(8.2 * 1024 * 1024);
+  // View & UI state - defaults to clean empty state (Figma Page 4)
+  const [status, setStatus] = useState<ViewStatus>('empty');
+  const [fileName, setFileName] = useState('');
+  const [fileSize, setFileSize] = useState<number | undefined>(undefined);
   const [selectedFile, setSelectedFile] = useState<File | Blob | null>(null);
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   // Pipeline options
   const [options, setOptions] = useState<TranscriptionOptions>({
@@ -39,42 +34,17 @@ export const App: React.FC = () => {
   });
 
   // Results
-  const [result, setResult] = useState<TranscriptionResult | null>(() => getFigmaSampleResult());
+  const [result, setResult] = useState<TranscriptionResult | null>(null);
 
   // Audio playback state
-  const [currentTime, setCurrentTime] = useState(21); // 00:21 matching Figma Page 1 screenshot!
-  const [duration, setDuration] = useState(84); // 01:24
+  const [currentTime, setCurrentTime] = useState(0);
+  const [duration, setDuration] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
   const [playbackRate, setPlaybackRate] = useState(1);
 
   // Transcribing timer
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
   const timerRef = useRef<number | null>(null);
-
-  // Initial load: create demo audio blob for synchronized playback
-  useEffect(() => {
-    const demoAudio = createSyntheticDemoWav(84);
-    const url = URL.createObjectURL(demoAudio);
-    setAudioUrl(url);
-    setSelectedFile(demoAudio);
-
-    return () => {
-      URL.revokeObjectURL(url);
-    };
-  }, []);
-
-  // Health check on mount
-  useEffect(() => {
-    checkHealth(apiUrl)
-      .then((data) => {
-        setHealth(data);
-        setHealthError(false);
-      })
-      .catch(() => {
-        setHealth(null);
-        setHealthError(true);
-      });
-  }, [apiUrl]);
 
   // Handle file select
   const handleFileSelect = (file: File | Blob, name: string) => {
@@ -120,6 +90,7 @@ export const App: React.FC = () => {
 
     setStatus('transcribing');
     setElapsedSeconds(0);
+    setErrorMessage(null);
     const startTime = Date.now();
 
     timerRef.current = window.setInterval(() => {
@@ -131,15 +102,11 @@ export const App: React.FC = () => {
       const res = await transcribeAudio(selectedFile, fileName, options, apiUrl);
       setResult(res);
       setStatus('completed');
+      setErrorMessage(null);
       setCurrentTime(0);
-    } catch {
-      // If backend is unavailable or running in offline preview, fallback gracefully to realistic transcription
-      setTimeout(() => {
-        const fallback = getFigmaSampleResult();
-        fallback.fileName = fileName;
-        setResult(fallback);
-        setStatus('completed');
-      }, 1500);
+    } catch (err: any) {
+      setStatus('error_general');
+      setErrorMessage(err.message || 'Transcription failed. Please check the backend connection.');
     } finally {
       if (timerRef.current) {
         clearInterval(timerRef.current);
@@ -181,7 +148,7 @@ export const App: React.FC = () => {
   return (
     <div className="min-h-screen bg-slate-50/70 text-slate-900 flex flex-col font-sans">
       {/* Navbar */}
-      <Navbar health={health} healthError={healthError} />
+      <Navbar />
 
       {/* Main Content Area */}
       <main className="max-w-7xl w-full mx-auto px-6 sm:px-12 py-10 flex-1 flex flex-col">
@@ -223,6 +190,7 @@ export const App: React.FC = () => {
             status={status}
             result={result}
             elapsedSeconds={elapsedSeconds}
+            errorMessage={errorMessage}
             audioUrl={audioUrl}
             currentTime={currentTime}
             duration={duration}
