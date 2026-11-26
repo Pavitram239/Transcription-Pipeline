@@ -50,6 +50,7 @@ Transcription Pipeline/
 │   │   ├── engines/            # BaseTranscriptionEngine, faster-whisper, mock engine
 │   │   ├── config.py           # Centralized configuration & environment overrides
 │   │   ├── pipeline.py         # Audio validation, decoding & hook manager
+│   │   ├── job_manager.py      # Thread-safe async background job queue & status tracker
 │   │   ├── exporters.py        # Subtitle and text formatters (JSON, SRT, VTT, TXT)
 │   │   ├── cli.py              # CLI entry point
 │   │   └── api/                # FastAPI service (/v1/transcribe, /v1/health)
@@ -140,7 +141,13 @@ uvicorn src.api.app:app --host 127.0.0.1 --port 8000 --reload
 ```
 * **Interactive Docs:** Visit `http://127.0.0.1:8000/docs`
 * **Health Check:** `GET /v1/health`
-* **Transcribe:** `POST /v1/transcribe` (accepts file upload)
+* **Synchronous Transcription:** `POST /v1/transcribe` (accepts file upload)
+* **Asynchronous Background Jobs API:**
+  * `POST /v1/transcriptions` — Enqueue audio file for background transcription (returns `202 Accepted` with `job_id`)
+  * `GET /v1/transcriptions/{job_id}` — Poll job status, progress percentage, or completed transcription
+  * `GET /v1/transcriptions/{job_id}/export?format=srt` — Export completed job to SRT, VTT, TXT, or JSON
+  * `GET /v1/transcriptions` — List recent background jobs
+  * `DELETE /v1/transcriptions/{job_id}` — Cancel pending job or delete job record
 
 ### C. Run the Test Suite
 ```bash
@@ -148,8 +155,32 @@ cd backend
 pytest -v tests/
 ```
 ```
-============================= 24 passed in 2.62s ==============================
+============================= 31 passed in 3.21s ==============================
 ```
+
+### Running with Docker Compose (Single Command)
+
+To run the entire system (FastAPI backend + Nginx-served React frontend) in isolated Docker containers:
+
+```bash
+docker compose up --build
+```
+
+* **Frontend Web Studio:** Open [http://localhost:5173](http://localhost:5173)
+* **Backend API & Swagger Docs:** Open [http://localhost:8000/docs](http://localhost:8000/docs)
+* **Model Cache:** Downloaded Whisper weights are automatically cached inside the `whisper-model-cache` Docker volume, preventing re-downloading across container restarts.
+
+To run in the background (detached):
+```bash
+docker compose up -d
+```
+
+To stop containers:
+```bash
+docker compose down
+```
+
+---
 
 ### Running the Web Studio Frontend (React + Vite)
 

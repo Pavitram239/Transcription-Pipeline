@@ -1,0 +1,41 @@
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: transcription-backend
+    ports:
+      - "8000:8000"
+    environment:
+      - MODEL_SIZE=base
+      - DEVICE=cpu
+      - COMPUTE_TYPE=int8
+      - TRANSCRIPTION_USE_MOCK=false
+    volumes:
+      # Named volume to cache downloaded Whisper models across container restarts
+      - whisper-cache:/root/.cache/huggingface
+    restart: unless-stopped
+    networks:
+      - transcription-net
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: transcription-frontend
+    ports:
+      - "5173:80"
+    depends_on:
+      backend:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - transcription-net
+
+volumes:
+  whisper-cache:
+    name: whisper-model-cache
+
+networks:
+  transcription-net:
+    driver: bridge

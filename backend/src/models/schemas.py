@@ -1,8 +1,19 @@
 """Pydantic schemas for audio transcription inputs, segments, and outputs."""
 
 from datetime import datetime, timezone
+from enum import Enum
 from typing import List, Optional
 from pydantic import BaseModel, Field
+
+
+class JobStatus(str, Enum):
+    """Execution status for asynchronous background transcription jobs."""
+
+    QUEUED = "QUEUED"
+    PROCESSING = "PROCESSING"
+    COMPLETED = "COMPLETED"
+    FAILED = "FAILED"
+    CANCELLED = "CANCELLED"
 
 
 class Word(BaseModel):
@@ -99,4 +110,37 @@ class HealthResponse(BaseModel):
     device: str
     supported_formats: List[str]
     timestamp: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+
+class TranscriptionJobSubmission(BaseModel):
+    """Initial lightweight response returned when a background job is enqueued."""
+
+    job_id: str = Field(..., description="Unique job identifier (e.g. tx_01a2b3c4)")
+    status: JobStatus = Field(default=JobStatus.QUEUED, description="Current job status")
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    status_url: str = Field(..., description="API path to poll for job progress and status")
+    filename: Optional[str] = Field(default=None, description="Original name of the ingested audio file")
+
+
+class TranscriptionJobDetails(BaseModel):
+    """Full detail and progress status of an asynchronous transcription job."""
+
+    job_id: str
+    status: JobStatus
+    created_at: datetime
+    started_at: Optional[datetime] = None
+    completed_at: Optional[datetime] = None
+    progress_percent: int = Field(default=0, ge=0, le=100)
+    duration_seconds: Optional[float] = None
+    processing_time_seconds: Optional[float] = None
+    error_message: Optional[str] = None
+    filename: Optional[str] = None
+    result: Optional[TranscriptionResult] = None
+
+
+class JobListResponse(BaseModel):
+    """Paginated or listed array of background jobs."""
+
+    total: int
+    jobs: List[TranscriptionJobDetails]
 

@@ -1,4 +1,11 @@
-import { HealthResponse, TranscriptionOptions, TranscriptionResult } from './types';
+import {
+  HealthResponse,
+  JobListResponse,
+  TranscriptionJobDetails,
+  TranscriptionJobSubmission,
+  TranscriptionOptions,
+  TranscriptionResult,
+} from './types';
 
 export const DEFAULT_API_URL = 'http://localhost:8000';
 
@@ -159,3 +166,73 @@ export function createSyntheticDemoWav(durationSeconds: number = 84): Blob {
 
   return new Blob([view], { type: 'audio/wav' });
 }
+
+export async function submitAsyncJob(
+  file: File | Blob,
+  fileName: string,
+  options: TranscriptionOptions,
+  baseUrl: string = DEFAULT_API_URL
+): Promise<TranscriptionJobSubmission> {
+  const url = `${baseUrl.replace(/\/$/, '')}/v1/transcriptions`;
+  const formData = new FormData();
+  formData.append('file', file, fileName);
+
+  if (options.language && options.language !== 'auto') {
+    formData.append('language', options.language);
+  }
+  formData.append('vad_filter', String(options.vad_filter));
+  formData.append('word_timestamps', String(options.word_timestamps));
+
+  const response = await fetch(url, {
+    method: 'POST',
+    body: formData,
+  });
+
+  if (!response.ok) {
+    let errorDetail = `Job submission failed: ${response.status}`;
+    try {
+      const errJson = await response.json();
+      if (errJson.detail) errorDetail = errJson.detail;
+    } catch {
+      // ignore
+    }
+    throw new Error(errorDetail);
+  }
+
+  return response.json();
+}
+
+export async function getJobDetails(
+  jobId: string,
+  baseUrl: string = DEFAULT_API_URL
+): Promise<TranscriptionJobDetails> {
+  const url = `${baseUrl.replace(/\/$/, '')}/v1/transcriptions/${jobId}`;
+  const response = await fetch(url, {
+    method: 'GET',
+    headers: { Accept: 'application/json' },
+  });
+
+  if (!response.ok) {
+    throw new Error(`Failed to fetch job status: ${response.status}`);
+  }
+
+  return response.json();
+}
+
+export async function listJobs(
+  limit: number = 50,
+  baseUrl: string = DEFAULT_API_URL
+): Promise<JobListResponse> {
+  const url = `${baseUrl.replace(/\/$/, '')}/v1/transcriptions?limit=${limit}`;
+  const response = await fetch(url, {
+    method: 'GET',
+    headers: { Accept: 'application/json' },
+  });
+
+  if (!response.ok) {
+    throw new Error(`Failed to list jobs: ${response.status}`);
+  }
+
+  return response.json();
+}
+
